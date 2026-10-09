@@ -2,13 +2,15 @@ import {VALUES,axisSummary,population,samplePopulation,simpson} from "./model.js
 import {expose,tool,number} from "./ui.js";
 import {seedNumber} from "./math.js";
 import {createInvestigations} from "./investigations.js";
+import {createExercises} from "./exercise-ui.js";
 const $=s=>document.querySelector(s),NS="http://www.w3.org/2000/svg",data=population();
 const CASES=["axis","sample","simpson","hunt","correlation","interval"];
 function randomSeed(){const value=new Uint32Array(1);crypto.getRandomValues(value);return value[0]||1;}
 let active="axis",baseline=0,size=20,mode="random",seed=randomSeed(),aEasy=10,bEasy=80,sample=samplePopulation(data,size,mode,seed);
 const investigations=createInvestigations(seed);
+const exercises=createExercises(randomSeed);
 const percent=n=>(n*100).toFixed(1)+"%";
-function selectCase(name){if(!CASES.includes(name))throw new TypeError("Unknown case");active=name;for(const tab of document.querySelectorAll("[data-case]")){const yes=tab.dataset.case===name;tab.setAttribute("aria-selected",String(yes));tab.tabIndex=yes?0:-1;$("#panel-"+tab.dataset.case).hidden=!yes;}investigations.render(name);return summary();}
+function selectCase(name){if(!CASES.includes(name))throw new TypeError("Unknown case");active=name;for(const tab of document.querySelectorAll("[data-case]")){const yes=tab.dataset.case===name;tab.setAttribute("aria-selected",String(yes));tab.tabIndex=yes?0:-1;$("#panel-"+tab.dataset.case).hidden=!yes;}investigations.render(name);exercises.select(name);return summary();}
 function summary(){const s=simpson(aEasy,bEasy);return {active,axis:axisSummary(baseline),sample:{size,mode,seed,populationMean:sample.populationMean,sampleMean:sample.sampleMean,error:sample.error},simpson:{aEasy,bEasy,A:s.A.total.rate,B:s.B.total.rate,overallWinner:s.overallWinner,reversed:s.reversed},investigations:investigations.summary()};}
 function configure(input){
   const next={baseline,size,mode,aEasy,bEasy,...input};number(next.baseline,0,51,"baseline");number(next.size,5,80,"size");if(!Number.isInteger(next.size)||!["random","high","low"].includes(next.mode))throw new TypeError("Invalid sampling");
@@ -44,7 +46,7 @@ function renderSimpson(){
   $("#simpsonFeedback").textContent=s.reversed?"각 조건에서는 A가 앞서지만, 합치면 B가 "+percent(s.B.total.rate)+"로 앞섭니다. B가 쉬운 과제를 더 많이 맡았기 때문입니다.":s.overallWinner==="tie"?"각 조건에서는 A가 앞서지만, 합산 성공률은 같습니다. 조건별 시도 횟수를 함께 살펴보세요.":"전체에서도 A가 "+percent(s.A.total.rate)+"로 앞섭니다. 각 조건의 성공률은 그대로지만, 맡은 과제의 비율이 달라졌습니다.";
 }
 function render(){renderAxis();renderSample();renderSimpson();investigations.render(active);}
-function replay(input){const nextSeed=seedNumber(input.seed);seed=nextSeed;sample=samplePopulation(data,size,mode,seed);investigations.setSeed(seed);$("#trialSeed").value=seed;$("#trialSeed").removeAttribute("aria-invalid");$("#seedStatus").textContent="현재 시드 "+seed+". 조건만 바꾸면 같은 원자료를 다시 분석합니다. 같은 시드·조건으로 결과를 재현할 수 있습니다.";render();return summary();}
+function replay(input){const nextSeed=seedNumber(input.seed);seed=nextSeed;sample=samplePopulation(data,size,mode,seed);investigations.setSeed(seed);$("#trialSeed").value=seed;$("#trialSeed").removeAttribute("aria-invalid");$("#seedStatus").textContent="현재 시드 "+seed;render();return summary();}
 function resample(){return replay({seed:randomSeed()});}
 for(const tab of document.querySelectorAll("[data-case]")){tab.addEventListener("click",()=>selectCase(tab.dataset.case));tab.addEventListener("keydown",e=>{const i=CASES.indexOf(active);let next;if(e.key==="ArrowRight")next=CASES[(i+1)%CASES.length];if(e.key==="ArrowLeft")next=CASES[(i+CASES.length-1)%CASES.length];if(e.key==="Home")next=CASES[0];if(e.key==="End")next=CASES.at(-1);if(next){e.preventDefault();selectCase(next);$("#tab-"+next).focus();}});}
 $("#replaySeed").addEventListener("click",()=>{try{replay({seed:Number($("#trialSeed").value)});}catch{$("#trialSeed").setAttribute("aria-invalid","true");$("#seedStatus").textContent="시드는 1부터 4294967295까지의 정수여야 합니다. 기존 실험은 유지됩니다.";}});

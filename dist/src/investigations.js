@@ -1,8 +1,9 @@
-import {huntExperiment,correlationDataset,correlationSummary,intervalExperiment,missionFeedback} from "./statistics.js";
+import {correlationSummary,missionFeedback} from "./statistics.js";
 import {integer,seedNumber} from "./math.js";
+import {investigationResult,interpretation,serializeTrace} from "./interpretation.js";
 
 const $=s=>document.querySelector(s),NS="http://www.w3.org/2000/svg";
-const pct=v=>(100*v).toFixed(1)+"%",rtext=v=>v===null?"미정의":v.toFixed(3),ptext=v=>v<.0001?v.toExponential(3):v.toFixed(4);
+const rtext=v=>v===null?"미정의":v.toFixed(3),ptext=v=>v<.0001?v.toExponential(3):v.toFixed(4);
 function text(id,value){$("#"+id).textContent=value;}
 function table(id,rows){$("#"+id).replaceChildren(...rows.map(row=>{const tr=document.createElement("tr");for(const value of row){const td=document.createElement("td");td.textContent=value;tr.append(td);}return tr;}));}
 function svg(parent,tag,attrs,value){const node=document.createElementNS(NS,tag);for(const [k,v]of Object.entries(attrs))node.setAttribute(k,v);if(value!==undefined)node.textContent=value;parent.append(node);return node;}
@@ -14,19 +15,13 @@ export function createInvestigations(initialSeed){
   const allowed={huntTruth:["null","signal"],huntPolicy:["peek","fixed"],huntCorrection:["raw","bonferroni"],correlationScenario:["confounding","outlier"],correlationView:["all","centered","without"],intervalSize:[20,80,200],intervalMode:["random","biased"],intervalConfidence:[.9,.95,.99]};
   function result(name){
     if(cache.has(name))return cache.get(name);
-    let value;
-    if(name==="hunt")value=huntExperiment(seed,state.huntMetrics,state.huntTruth,state.huntPolicy,state.huntCorrection);
-    if(name==="correlation"){
-      const points=correlationDataset(seed,state.correlationScenario),full=correlationSummary(points),without=correlationSummary(points.filter(p=>p.id!==23));
-      value={points,full,without,scenario:state.correlationScenario};
-    }
-    if(name==="interval")value=intervalExperiment(seed,state.intervalSize,state.intervalMode,state.intervalConfidence);
-    if(!value)throw new RangeError("Unknown investigation");cache.set(name,value);return value;
+    const value=investigationResult(name,seed,state);
+    cache.set(name,value);return value;
   }
   function feedback(name){
     if(!answers[name])return;
     const f=missionFeedback(name,answers[name],result(name)),target=$("#"+name+"Answer");
-    target.dataset.correct=String(f.correct);target.textContent=(f.correct?"현재 조건에서 맞습니다. ":"현재 조건에서 다시 판단해 보세요. ")+f.text;
+    target.dataset.correct=String(f.correct);target.textContent=(f.correct?"맞습니다. ":"다시 판단해 보세요. ")+f.text;
     for(const b of document.querySelectorAll('[data-mission="'+name+'"]'))b.setAttribute("aria-pressed",String(b.dataset.choice===answers[name]));
   }
   function renderHunt(){
@@ -34,7 +29,7 @@ export function createInvestigations(initialSeed){
     $("#huntMetrics").value=state.huntMetrics;text("huntMetricsOut",state.huntMetrics+"개");
     for(const key of ["huntTruth","huntPolicy","huntCorrection"])$("#"+key).value=state[key];
     text("huntVerdict",c.rejected?"H0 기각":"기각 못함");text("huntFamily",c.tests+"검정");text("huntRate",h.flagged+" / "+h.replicates);
-    text("huntEvidence","시드 "+seed+" · 가장 작은 관측 p = "+ptext(c.best.p)+" (지표 "+(c.best.metric+1)+", "+c.best.successes+" / "+c.best.n+"). 문턱 "+ptext(c.threshold)+". "+c.stopN+"회 시점까지 지표당 관찰, 총 "+c.trialsObserved+"개 관측. "+(c.firstHit?"첫 발견: 지표 "+(c.firstHit.metric+1)+", "+c.firstHit.successes+" / "+c.firstHit.n+". ":"이번 자료에서 문턱을 넘은 검정이 없습니다. ")+"별도 160회 실험의 "+(state.huntTruth==="null"?"거짓 양성률":"적어도 하나 기각률")+" = "+pct(h.rate)+". 관측 빈도이며 보장값이 아닙니다.");
+    text("huntEvidence",interpretation("hunt",seed,state));
     table("huntAlternatives",h.alternatives.map(a=>[(a.policy==="peek"?"4시점 탐색":"80회 최종")+" / "+(a.correction==="raw"?"각 5%":"가족 보정"),ptext(a.threshold),(a.rejected?"발견":"미발견")+" / "+a.trialsObserved+"개 (지표당 "+a.stopN+")"]));
     const inspected=new Set(c.inspected.map(p=>p.metric+":"+p.n));
     const rows=h.dataset.streams.flatMap(s=>s.checkpoints.map(p=>({metric:s.id,...p})));
@@ -61,15 +56,14 @@ export function createInvestigations(initialSeed){
     chart.setAttribute("aria-label",points.length+"점, 현재 r "+rtext(current.r)+", X 범위 "+xmin.toFixed(1)+"부터 "+xmax.toFixed(1)+", Y 범위 "+ymin.toFixed(1)+"부터 "+ymax.toFixed(1));
     text("scatterCaption","파랑: "+d.full.groups[0].group+" · 주황: "+d.full.groups[1].group+" / 비교 조건마다 축 범위가 바뀝니다. 원자료는 아래 표에서 확인하세요.");
     text("correlationAll",rtext(d.full.r));text("correlationCurrent",rtext(current.r)+" / "+points.length);text("correlationWithin",rtext(d.full.withinR));
-    const rs=d.full.leaveOneOut.map(p=>p.r).filter(r=>r!==null);
-    text("correlationEvidence","시드 "+seed+" · 24번 제외 r = "+rtext(d.without.r)+". 한 점씩 제외한 전체 범위 "+rtext(Math.min(...rs))+" … "+rtext(Math.max(...rs))+". "+(state.correlationScenario==="confounding"?"각 12점 집단 안에서는 음의 관계지만 집단 위치 차이로 전체 상관은 양수입니다. 중심화하면 그 위치 차이가 제거됩니다.":"24번 한 점이 전체 방향을 바꿉니다. 중심화에서는 단독 집단의 한 점이 (0,0)이 되므로, 집단 보정의 인과적 증거로 해석할 수 없습니다.")+" 원자료 제외·중심화는 민감도 비교이며 인과적 입증이 아닙니다.");
+    text("correlationEvidence",interpretation("correlation",seed,state));
     table("correlationGroups",d.full.groups.map(g=>[g.group,g.n,rtext(g.r)]));
     table("correlationRaw",d.points.map((p,i)=>[(p.id+1)+" / "+p.group,p.x,p.y,rtext(d.full.leaveOneOut[i].r)]));
   }
   function renderInterval(){
     const d=result("interval"),c=d.current;for(const key of ["intervalSize","intervalMode","intervalConfidence"])$("#"+key).value=state[key];
     text("intervalEstimate",c.successes+" / "+c.n);text("intervalBounds",c.low.toFixed(3)+" … "+c.high.toFixed(3));text("intervalCoverage",d.covered+" / "+d.replicates);
-    text("intervalEvidence","시드 "+seed+" · 이번 평균 "+c.estimate.toFixed(3)+", 오차 반폭 ε = "+c.epsilon.toFixed(3)+" ([0,1] 절단 전). 이번 목표 0.6 "+(c.covers?"포함":"미포함")+". 추출 풀 120 / "+c.poolSize+" = "+c.poolTarget.toFixed(3)+"; 목표 모집단 120 / 200 = 0.600. 반복 평균 "+d.meanEstimate.toFixed(3)+", 목표 포함률 "+pct(d.coverage)+". "+(c.mode==="biased"?"포함 보장은 선택 풀 평균에 적용됩니다. n을 늘려도 목표 모집단의 편향은 남습니다.":"독립 복원 표집에서 목표 모집단과 추출 풀의 평균이 같습니다. 160회 관측 포함률과 절차의 보장 하한은 다른 수치입니다."));
+    text("intervalEvidence",interpretation("interval",seed,state));
     const chart=$("#intervalChart");chart.replaceChildren();const x=v=>50+v*520;
     for(let i=0;i<=5;i++){const v=i/5;svg(chart,"line",{x1:x(v),x2:x(v),y1:25,y2:425,stroke:"#e2d9cb"});svg(chart,"text",{x:x(v),y:447,"text-anchor":"middle","font-size":12,fill:"#786f63"},v.toFixed(1));}
     svg(chart,"line",{x1:x(.6),x2:x(.6),y1:20,y2:425,stroke:"#303d48","stroke-width":2});
@@ -81,6 +75,7 @@ export function createInvestigations(initialSeed){
   function render(name){
     if(!["hunt","correlation","interval"].includes(name))return;
     if(name==="hunt")renderHunt();if(name==="correlation")renderCorrelation();if(name==="interval")renderInterval();feedback(name);
+    text(name+"ExportStatus","");
   }
   function configure(input){
     if(!input||typeof input!=="object"||Array.isArray(input))throw new TypeError("Object required");
@@ -100,5 +95,16 @@ export function createInvestigations(initialSeed){
     const control=$("#"+key);control.addEventListener(key==="huntMetrics"?"input":"change",()=>configure({[key]:typeof state[key]==="number"?Number(control.value):control.value}));
   }
   for(const button of document.querySelectorAll("[data-mission]"))button.addEventListener("click",()=>{const name=button.dataset.mission;answers[name]=button.dataset.choice;feedback(name);});
+  function exportTrace(name){
+    const json=serializeTrace(name,seed,state),blob=new Blob([json],{type:"application/json;charset=utf-8"});
+    const url=URL.createObjectURL(blob),link=document.createElement("a");
+    link.href=url;link.download="data-mirage-"+name+"-"+seed+".json";
+    link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  for(const button of document.querySelectorAll("[data-export]"))button.addEventListener("click",()=>{
+    const name=button.dataset.export;
+    try{exportTrace(name);text(name+"ExportStatus","현재 조건의 파일을 준비했습니다.");}
+    catch{text(name+"ExportStatus","내려받을 수 없습니다.");}
+  });
   return {render,configure,summary,setSeed};
 }

@@ -132,9 +132,9 @@ export function missionFeedback(mission,answer,result) {
   }
   if(mission==="interval"){
     const c=result.current,correct=c.mode==="random"?"repeat":"bias";
-    const messages={probability:"이번에 계산된 구간과 고정된 모집단 평균 0.6은 이미 정해져 있습니다. 95% 같은 수치는 이 한 구간 안에 참값이 있을 사후확률이 아닙니다.",
+    const messages={probability:"현재 "+Math.round(c.confidence*100)+"%는 반복 절차의 포함 확률 하한입니다. 이번 구간 안에 고정된 평균 0.6이 있을 사후확률이 아닙니다.",
       repeat:c.mode==="random"?"같은 독립·복원 표집을 반복할 때 이 Hoeffding 절차는 적어도 "+Math.round(c.confidence*100)+"%의 포함 확률을 보장합니다. 보수적 상계이며 이번 160회 포함률이 정확히 그 값일 필요는 없습니다.":"독립 복원 표집이어도 지금은 140개 선택 풀의 평균을 추정합니다. 전체 200개 평균에 대한 포함 보장은 적용되지 않습니다.",
-      bias:c.mode==="biased"?"현재 선택 풀은 120/140, 목표 모집단은 120/200입니다. n을 늘리면 잘못된 목표 주변에서 구간이 좁아집니다. 표본 수만으로 선택 편향을 없앨 수 없습니다.":"현재는 전체 200개에서 균등 복원 추출하므로 이 선택 편향 진단은 맞지 않습니다. 반복 포함 확률과 단일 구간의 해석을 구분하세요."};
+      bias:c.mode==="biased"?"현재 선택 풀은 120/140, 목표 모집단은 120/200입니다. n을 늘리면 선택 풀 평균 주변에서 구간이 좁아집니다. 표본 수만으로 선택 편향을 없앨 수 없습니다.":"현재는 전체 200개에서 균등 복원 추출합니다. 반복 포함 확률과 단일 구간의 해석을 구분하세요."};
     choose(answer,Object.keys(messages),"answer");return {correct:answer===correct,text:messages[answer]};
   }
   throw new RangeError("Unknown mission");

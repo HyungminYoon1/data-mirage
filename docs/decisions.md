@@ -1,5 +1,23 @@
 # Decisions
 
+## D07 — 용어 설명·조건별 비교·전체 실험 내보내기 / 2026-10-09
+
+- Context: 사용자가 간결한 용어 정의, 현재 자료/조건에 따른 해석 피드백과 유용한 전체 근거 내보내기를 승인했습니다.
+- Options: 기존 판정 문구 반복; 외부 AI 채점; 실제 관측에서 규칙/좌표/추정 대상을 비교하는 순수 함수.
+- Decision: p값/H0의 확률, 사전 검정 가족, 집단 중심화, 포함률/포함 확률 하한을 해당 실험의 접이식 정의로 제공합니다. 순수 interpretation.js는 동일 자료의 최종 검사/보정 결과, 최대 한 점 제외 변화, 선택 풀과 전체 목표의 실제 반복 포함 수를 계산합니다. JSON은 현재 합성 실험과 전체 160회 원자료/계산을 담으며 4 MiB로 제한합니다. 기존 캠페인과 통계 계산은 유지하고 공개 문구는 조작 목적·자료 출처·필수 가정만 남깁니다.
+- Rationale: 피드백과 내보내기에서 계산 근거를 재현할 수 있고 단순 개념 라벨이나 외부 채점이 필요하지 않습니다.
+- Affected: dist/src/interpretation.js, dist/src/investigations.js, dist/src/statistics.js (구간 피드백의 현재 %), dist/index.html, dist/styles.css, test/interpretation.test.js, README.md.
+- Review: 내보내기는 실험의 전체 생성 원자료이며 사용자 행동 이력이 아닙니다. 실제 브라우저 다운로드/접근성/성능 QA는 메인 담당자가 검증합니다. 네트워크나 진단·도덕적 평가를 추가하지 않습니다.
+
+## D08 — 독립 문제의 최소 기기 완료 기록과 갤러리 요약 / 2026-10-09
+
+- Context: 사용자가 제한된 로컬 지속성 및 모든 앱의 web-lab-progress-v1 통합 계약을 명시적으로 승인했습니다. 단순 방문/힌트/예제로 완료를 기록하지 않습니다.
+- Options: 방문을 완료로 간주; 답/시드/행동 이력 저장; 서버 계정/랭킹; 별도 문제의 처음 정답에 대한 고유 항목 ID만 저장.
+- Decision: 기존 여섯 실험은 그대로 두고 별도 새 수치 문제를 제공합니다. 유효한 첫 제출이 맞을 때만 해당 실험 ID를 추가합니다. 오답 후에는 같은 문제의 재제출이 닫히며 새 문제를 풀어야 합니다. 정답은 생성 조건에서 다시 계산하므로 주입한 expected 값으로 우회할 수 없습니다. data-mirage-achievements-v1에는 여섯 ID까지 저장하며 읽기는 512자로 제한합니다. 요약은 실제 저장된 ID 수로 재계산하고 15개 알려진 repo ID, 정수 0..total<=1000, 실제 갱신 시각을 검증합니다. 전체 요약 읽기는 8192자. 이름/시드/답/행동/파일은 요약에 넣지 않습니다. 자체 초기 방문은 빈 요약을 만들지 않습니다.
+- Rationale: 실험 조작과 독립 문제 풀이를 구분하고, 통합 갤러리가 최소 개수만 읽도록 합니다. 계정·서버·개인 기록이 필요하지 않습니다.
+- Affected: architecture.md, dist/src/exercises.js, dist/src/exercise-ui.js, dist/src/progress.js, dist/src/app.js, dist/index.html, tools/check.mjs, test/exercises.test.js, test/progress.test.js, README.md, docs/verification.md.
+- Review: D02/D06의 저장소 금지는 이 두 키에 한해 명시적으로 대체됩니다. 나머지 네트워크/추적/비허용 저장소 검사는 유지하며 저장소 호출은 progress.js에만 허용합니다. 실패 시 다른 앱 데이터를 덮어쓰지 않으며 직접 지우기는 자체 키·자체 요약만 삭제합니다. 기기 편집에 대한 무결성/공개 랭킹을 주장하지 않습니다. 동시 탭 쓰기는 트랜잭션이 아니며 이후 재계산으로 자체 요약을 맞춥니다. 승인 범위는 지정 저장소의 코드/문서/로컬 검사이며 커밋·푸시·배포·다른 저장소 수정·추가 에이전트 생성은 하지 않습니다.
+
 ## D01 — Static, independent implementation
 
 - Context: the user approved implementing all six proposed services and adding them to WEB LAB.
