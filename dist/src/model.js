@@ -1,4 +1,4 @@
-import {rng,number} from "./ui.js";
+import {rng,number} from "./math.js";
 export const VALUES=Object.freeze([52,53,54,55,56]);
 export function mean(values){
   if(!Array.isArray(values)||!values.length||values.some(v=>!Number.isFinite(v)))throw new TypeError("Finite nonempty values required");

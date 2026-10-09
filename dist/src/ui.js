@@ -1,13 +1,5 @@
-export function rng(seed=1) {
-  let s=(Number(seed)>>>0)||1;
-  return () => { s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; };
-}
+export {rng,number} from "./math.js";
 export function clamp(n,min,max) { return Math.min(max,Math.max(min,n)); }
-export function number(value,min,max,label="value") {
-  const n=Number(value);
-  if(!Number.isFinite(n)||n<min||n>max) throw new RangeError(`Invalid ${label}`);
-  return n;
-}
 export function expose(tools) {
   const context=document.modelContext;
   if(!context?.registerTool) return false;
