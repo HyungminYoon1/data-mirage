@@ -3,12 +3,15 @@ import {expose,tool,number} from "./ui.js";
 import {seedNumber} from "./math.js";
 import {createInvestigations} from "./investigations.js";
 import {createExercises} from "./exercise-ui.js";
+import {mountStudy} from './study-ui.js';
 const $=s=>document.querySelector(s),NS="http://www.w3.org/2000/svg",data=population();
 const CASES=["axis","sample","simpson","hunt","correlation","interval"];
 function randomSeed(){const value=new Uint32Array(1);crypto.getRandomValues(value);return value[0]||1;}
 let active="axis",baseline=0,size=20,mode="random",seed=randomSeed(),aEasy=10,bEasy=80,sample=samplePopulation(data,size,mode,seed);
 const investigations=createInvestigations(seed);
 const exercises=createExercises(randomSeed);
+const study=mountStudy($('#studyRoot'),{randomSeed,onExperiment(name){$('#studyRoot').hidden=true;$('#experiments').hidden=false;selectCase(name);$('#experiments').scrollIntoView({block:'start'});}});
+$('#backStudy').addEventListener('click',()=>{$('#experiments').hidden=true;$('#studyRoot').hidden=false;study.showConcept();$('#studyRoot').scrollIntoView({block:'start'});});
 const percent=n=>(n*100).toFixed(1)+"%";
 function selectCase(name){if(!CASES.includes(name))throw new TypeError("Unknown case");active=name;for(const tab of document.querySelectorAll("[data-case]")){const yes=tab.dataset.case===name;tab.setAttribute("aria-selected",String(yes));tab.tabIndex=yes?0:-1;$("#panel-"+tab.dataset.case).hidden=!yes;}investigations.render(name);exercises.select(name);return summary();}
 function summary(){const s=simpson(aEasy,bEasy);return {active,axis:axisSummary(baseline),sample:{size,mode,seed,populationMean:sample.populationMean,sampleMean:sample.sampleMean,error:sample.error},simpson:{aEasy,bEasy,A:s.A.total.rate,B:s.B.total.rate,overallWinner:s.overallWinner,reversed:s.reversed},investigations:investigations.summary()};}

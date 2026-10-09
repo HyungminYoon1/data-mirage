@@ -1,5 +1,12 @@
 # Verification
 
+## 2026-10-10 개념·문제 중심 통계 학습 — LOCAL
+
+- SOURCE VERIFIED: architecture/README/decisions, 기존 여섯 실험·풀이·두 키 progress 경계, 새 curriculum/problem-bank/study-ui와 테스트·정적 검사를 검토했습니다. MIT OCW 18.05/18.443/18.655 읽기/강의 자료를 연결하고 한국어 규칙·예제·문제를 자체 작성했습니다. 시험 원문을 복사하거나 수능 난이도 검증을 받았다고 주장하지 않습니다.
+- LOCAL: 43/43 tests PASS, 16 public/29 UTF8-noBOM-CRLF text files 정적 검사 PASS, git diff --check PASS. 24유형×64 seeds의 결정성/문제 변형/모든 두 답, 안전 수치·분수 파서/첫 답 종료/반올림, hypergeometric·binomial 독립 합계, 결합 2차 모멘트, censored MLE, Beta predictive variance, Rao–Blackwell, Fisher/변환 CRLB, bootstrap 유한 전수, 우도비·위험·최적 배분의 별도 계산을 검사했습니다. 회귀 답은 실제 표시된 반올림 Syy에서 계산합니다.
+- ACTUAL BROWSER: 18개 개념 확인과 24유형의 실제 무작위 두 답 입력/채점, 1/0 거절 후 입력 유지, 첫 유효 답의 시도 종료, 새 조건, 여섯 기존 보조 실험/학습 복귀를 확인했습니다. 새 학습/문제/노트는 페이지 메모리만 쓰며 기존 자체 완료 두 ID와 다른 앱 요약이 그대로 유지되었습니다. QA는 원래 crypto RNG의 실제 seed를 관측했으며 고정·대체 시드나 승리/채점 상태를 주입하지 않았습니다. desktop1440/mobile390/320 root overflow와 관측된 page errors 0. 새 미리보기는 새로고침한 0/18 실제 화면입니다.
+- PARTIAL / NOT_RUN: 기초·대학·수리통계·대학원 입문은 학습 경로이지 전 과정/정규 과목 인증이 아닙니다. 정확식/근사식/점근 가정·표본/모집단 분산 구분을 문제에 표시합니다. 독립 교육/수학 전문가 검토와 실제 수험생 난이도 측정, 모든 기기·브라우저 검증은 NOT_RUN. 기존 완료 총수6을 늘리거나 기존 기록을 새 18개 확인/24유형으로 오해하지 않습니다. REMOTE_CI/LIVE는 별도 확인합니다. QA는 ignored output/playwright/2026-10-10-improvements에 있습니다.
+
 ## Scope
 
 data-mirage: model source and focused tests, static asset/syntax checks, browser interaction, remote workflow and public site are separate evidence levels. Existing unrelated services remain outside this change.

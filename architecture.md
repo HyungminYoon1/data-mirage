@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Six investigations about chart baselines, biased samples, Simpson's paradox, optional stopping/multiple comparisons, correlation sensitivity/confounding, and bounded sampling uncertainty with computed outcomes. All datasets are explicitly synthetic; no real-world or medical measurements are implied.
+Concept-first statistics learning: eighteen units from basic probability to introductory graduate inference, twenty-four original multi-part problem families, and six supporting investigations about chart baselines, biased samples, Simpson's paradox, optional stopping/multiple comparisons, correlation sensitivity/confounding, and bounded sampling uncertainty with computed outcomes. All datasets are explicitly synthetic; no real-world or medical measurements are implied.
 
 ## Structure
 
@@ -25,5 +25,11 @@ Explicit clear removes only the own private key and own aggregate entry. Blocked
 No eval, user HTML injection or remote embeds. External links use noopener/noreferrer. CSP restricts connections and execution; GitHub hosting logs are separate. Only dist is deployed. UTF-8 without BOM / CRLF. Preserve all other repositories.
 
 ## Visual direction
+
+## Curriculum addition (D09)
+
+curriculum.js owns authored concept rules, formulas, assumptions, checks and primary reading links; problem-bank.js owns deterministic parameterized problems and canonical multi-answer grading. Both remain pure. study-ui.js owns navigation, worked examples, bounded recent problem signatures (16), recent solutions (12), transient scratch text (6000 characters) and first-valid-submission lifecycle. Invalid inputs keep an attempt open; a valid submission closes it, whether correct or wrong. Correct answers are recomputed from type and seed, not trusted from injected expected values. Probability fractions, decimals and scientific notation are accepted without evaluation of executable text. Twenty-four problem families have four instructional tiers; tier labels indicate concepts, not validated equivalence to a particular national exam.
+
+All new concept checks, attempts, answers, seeds, scratch text and session counts remain page memory. They do not award the six existing D08 investigation IDs or alter shared summary totals. Existing exercises.js/progress.js contracts, calculations and six experiments remain unchanged. The default screen is the learning desk; experiments are explicit supporting navigation. References point to primary MIT OCW reading collections; questions and Korean worked derivations are original, not copied exams. Graduate units are introductory selections, not a claim of complete graduate-course coverage.
 
 ink/white editorial data-investigation desk. The working surface opens immediately; no marketing landing page ahead of controls. Keyboard controls, touch input, readable labels and reduced motion are part of the UI. Diagrams/canvas represent actual computed state rather than decorative or fictional results.

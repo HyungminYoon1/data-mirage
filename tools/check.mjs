@@ -34,7 +34,7 @@ async function walk(dir) {
         const target=resolve(dirname(p),ref);
         assert(target.startsWith(root+sep),"Module escaped dist");await readFile(target);
       }
-      if(["model.js","statistics.js","math.js","interpretation.js","exercises.js"].includes(e.name)) {
+      if(["model.js","statistics.js","math.js","interpretation.js","exercises.js","curriculum.js","problem-bank.js"].includes(e.name)) {
         assert(!/\b(?:document|window|navigator|crypto)\b/.test(source),"Browser access in pure calculation: "+p);
         assert(!/from\s+["']\.\/(?:ui|app|investigations|progress|exercise-ui)\.js/.test(source),"UI/storage dependency in pure calculation: "+p);
       }

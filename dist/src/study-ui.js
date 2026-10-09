@@ -1,0 +1,45 @@
+import {LESSONS,LEVELS,SYMBOLS} from './curriculum.js';
+import {TYPES,problem,grade} from './problem-bank.js';
+const make=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
+const btn=(text,fn,cls)=>{const b=make('button',cls,text);b.type='button';b.addEventListener('click',fn);return b;};
+const link=(label,url)=>{const a=make('a',null,label);a.href=url;a.target='_blank';a.rel='noopener noreferrer';return a;};
+export function mountStudy(root,{randomSeed,onExperiment}){
+  const checked=new Set(),recent=[],review=[];let current=0,challenge=null,outcome=null,submitted=0,correct=0,mode='concept';
+  const hero=make('div','study-intro');hero.append(make('p','eyebrow','DATA MIRAGE · STATISTICS'),make('h1',null,'통계, 무엇을 가정했나요?'),make('p',null,'자료를 요약하고, 확률로 모델링하고, 모르는 값을 추정합니다. 처음이라면 개념 1번부터 읽고 풀이 예제와 새 문제를 연결하세요.'));
+  const path=make('ol','study-path');for(const text of ['자료와 확률','표본과 추론','추정의 원리','모형과 한계'])path.append(make('li',null,text));hero.append(path);
+  const menu=make('nav','study-menu');menu.setAttribute('aria-label','통계 학습 화면');const conceptBtn=btn('개념 학습',()=>showMode('concept')),problemBtn=btn('문제 풀기',()=>{showMode('problem');if(!challenge)nextProblem();}),experimentBtn=btn('보조 실험 ↗',()=>onExperiment('axis'));menu.append(conceptBtn,problemBtn,experimentBtn);
+  const concept=make('section','study-concept'),layout=make('div','study-layout'),nav=make('nav','study-lessons'),article=make('article','study-article');nav.setAttribute('aria-label','통계 개념 순서');const progress=make('p','study-progress');nav.append(make('h2',null,'18개 개념'),progress);const buttons=[];
+  LEVELS.forEach((text,level)=>{nav.append(make('h3',null,text));LESSONS.forEach((l,i)=>{if(l.level!==level)return;const b=btn(`${String(i+1).padStart(2,'0')}  ${l.title}`,()=>showLesson(i));buttons[i]=b;nav.append(b);});});layout.append(nav,article);concept.append(layout);
+  const symbolHelp=make('details','study-symbols');symbolHelp.append(make('summary',null,'기호가 낯설다면'));const dl=make('dl');for(const [s,d]of SYMBOLS)dl.append(make('dt',null,s),make('dd',null,d));symbolHelp.append(dl);concept.prepend(symbolHelp);
+  const desk=make('section','study-problems');desk.setAttribute('aria-label','통계 문제 풀이');desk.hidden=true;
+  const tools=make('div','problem-tools'),levelLabel=make('label',null,'문제 단계'),levelSelect=make('select'),typeLabel=make('label',null,'문제 유형'),typeSelect=make('select');levelSelect.setAttribute('aria-label','문제 단계');typeSelect.setAttribute('aria-label','문제 유형');
+  LEVELS.forEach((l,i)=>{const o=make('option',null,l);o.value=i;levelSelect.append(o);});levelSelect.value=1;levelLabel.append(levelSelect);typeLabel.append(typeSelect);tools.append(levelLabel,typeLabel,btn('새 문제',()=>nextProblem(), 'study-primary'));
+  const stats=make('p','problem-stats'),question=make('article','problem-paper'),form=make('form','problem-form'),fields=make('div','problem-fields'),submit=make('button','study-primary','답 확인');submit.type='submit';form.append(fields,submit);
+  const result=make('div','problem-result');result.setAttribute('role','status');
+  const notebook=make('details','problem-notebook'),scratch=make('textarea');scratch.setAttribute('aria-label','문제 풀이 메모');scratch.maxLength=6000;scratch.rows=6;scratch.placeholder='중간 계산과 가정을 적어보세요.';notebook.append(make('summary',null,'풀이 메모'),scratch);
+  const mistakes=make('details','problem-review');mistakes.append(make('summary',null,'이번 화면의 최근 풀이'));const reviewList=make('div');mistakes.append(reviewList);
+  desk.append(make('h2',null,'가정을 읽고, 두 답을 연결하세요'),make('p','problem-note','자체 제작 문제 · 숫자는 매번 바뀝니다. 각 답은 소수 여섯 자리 정도로 입력하세요. 1/3 같은 분수도 가능합니다. 검정 임계값·정확식·근사는 문제의 조건을 따릅니다.'),tools,stats,question,form,result,notebook,mistakes,make('p','problem-note','이 화면의 풀이와 메모는 페이지를 닫으면 사라집니다. 보조 실험의 기존 기기 기록과는 별개입니다.'));
+  root.replaceChildren(hero,menu,concept,desk);
+  function showMode(name){mode=name;concept.hidden=name!=='concept';desk.hidden=name!=='problem';conceptBtn.setAttribute('aria-pressed',String(name==='concept'));problemBtn.setAttribute('aria-pressed',String(name==='problem'));}
+  function showLesson(i){
+    current=i;const l=LESSONS[i];for(const [j,b]of buttons.entries())b.setAttribute('aria-current',j===i?'step':'false');progress.textContent=`이 화면에서 확인한 개념 ${checked.size}/18`;
+    article.replaceChildren(make('p','eyebrow',`${LEVELS[l.level]} · CONCEPT ${i+1}`),make('h2',null,l.title),make('p','study-question',l.question));
+    const core=make('div','study-core');core.append(make('strong',null,'핵심 규칙'),make('p',null,l.rule));article.append(core);
+    for(const [title,text,cls]of [['왜 그런가요?',l.reason,''],['식으로 정리',l.formula,'study-formula'],['필요한 가정',l.assumptions,''],['흔한 오해',l.pitfall,'']]){const s=make('section','study-block');s.append(make('h3',null,title),make('p',cls,text));article.append(s);}
+    const example=problem(l.problem,291+i*173),worked=make('details','worked-example');worked.append(make('summary',null,'풀이 예제 · 계산 과정 열기'),make('p',null,example.prompt));const steps=make('ol');example.steps.forEach(s=>steps.append(make('li',null,s)));worked.append(steps);article.append(worked);
+    const check=make('section','concept-check');check.append(make('h3',null,l.check[0]));const answers=make('div','concept-choices'),feedback=make('p');feedback.setAttribute('role','status');l.check[1].forEach((text,k)=>answers.append(btn(text,()=>{const yes=k===l.check[2];if(yes)checked.add(l.id);feedback.textContent=(yes?'맞습니다. ':'다시 생각해보세요. ')+l.check[3];progress.textContent=`이 화면에서 확인한 개념 ${checked.size}/18`;})));check.append(answers,feedback);article.append(check);
+    const actions=make('div','study-actions');if(i>0)actions.append(btn('← 이전',()=>showLesson(i-1)));actions.append(btn('이 개념의 새 문제',()=>{const spec=TYPES.find(t=>t[0]===l.problem);levelSelect.value=spec[1];updateTypes();typeSelect.value=l.problem;nextProblem();showMode('problem');},'study-primary'),btn('관련 실험',()=>onExperiment(l.experiment)));if(i+1<LESSONS.length)actions.append(btn('다음 개념 →',()=>showLesson(i+1)));article.append(actions,link('원문으로 더 공부하기 · MIT OCW ↗',l.source));
+  }
+  function updateTypes(){typeSelect.replaceChildren();const all=make('option',null,'이 단계에서 섞기');all.value='mix';typeSelect.append(all);for(const [id,level,title]of TYPES){if(level!==Number(levelSelect.value))continue;const o=make('option',null,title);o.value=id;typeSelect.append(o);}}
+  function nextProblem(){
+    const choices=TYPES.filter(t=>t[1]===Number(levelSelect.value));let candidate;
+    for(let i=0;i<24;i++){const seed=randomSeed(),type=typeSelect.value==='mix'?choices[seed%choices.length][0]:typeSelect.value;candidate=problem(type,seed);if(!recent.includes(candidate.prompt))break;}
+    if(recent.includes(candidate.prompt)){result.textContent='같은 조건이 반복되었습니다. 새 문제를 다시 눌러주세요.';return;}
+    recent.push(candidate.prompt);if(recent.length>16)recent.shift();challenge=candidate;outcome=null;scratch.value='';
+    question.replaceChildren(make('p','eyebrow',LEVELS[candidate.level]),make('h3',null,candidate.title),make('p','problem-prompt',candidate.prompt));
+    fields.replaceChildren();candidate.fields.forEach((f,i)=>{const label=make('label',null,`${i+1}. ${f.label}`),input=make('input');input.type='text';input.name=`answer-${i}`;input.maxLength=48;input.autocomplete='off';input.setAttribute('aria-label',f.label);label.append(input);fields.append(label);});result.replaceChildren();submit.disabled=false;stats.textContent=`이번 화면 · ${submitted}문제 제출 / ${correct}문제 모두 정답`;
+  }
+  form.addEventListener('submit',e=>{e.preventDefault();if(!challenge||outcome)return;const inputs=[...fields.querySelectorAll('input')];try{outcome=grade(challenge,inputs.map(i=>i.value));inputs.forEach((i,k)=>{i.disabled=true;i.removeAttribute('aria-invalid');i.dataset.correct=String(outcome.checks[k]);});submit.disabled=true;submitted++;if(outcome.correct)correct++;stats.textContent=`이번 화면 · ${submitted}문제 제출 / ${correct}문제 모두 정답`;result.replaceChildren(make('h3',null,outcome.correct?'두 답을 모두 맞혔습니다.':'풀이를 비교해보세요.'));const list=make('ol');outcome.steps.forEach(s=>list.append(make('li',null,s)));result.append(list,btn('다음 문제 →',()=>nextProblem(),'study-primary'));review.unshift({title:challenge.title,prompt:challenge.prompt,correct:outcome.correct,steps:outcome.steps});review.length=Math.min(review.length,12);reviewList.replaceChildren(...review.map(r=>{const d=make('details');d.append(make('summary',null,(r.correct?'정답 · ':'복습 · ')+r.title),make('p',null,r.prompt));const s=make('ol');r.steps.forEach(t=>s.append(make('li',null,t)));d.append(s);return d;}));}catch(err){result.textContent=err.message;inputs.forEach(i=>{if(!i.value.trim())i.setAttribute('aria-invalid','true');});}});
+  levelSelect.addEventListener('change',()=>{updateTypes();nextProblem();});typeSelect.addEventListener('change',nextProblem);updateTypes();showMode('concept');showLesson(0);
+  return {showConcept(){showMode('concept');},current:()=>LESSONS[current].id,mode:()=>mode};
+}
