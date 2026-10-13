@@ -1,5 +1,14 @@
 # Decisions
 
+## D11 — Submitted-question ownership for next / 2026-10-13
+
+- Context: approved edge audit reproduced a detached result button discarding a newly generated learning problem.
+- Options: global debounce; prevent all repeated new-problem requests; capture the submitted challenge.
+- Decision: the result's next callback acts only while its submitted challenge is current and has an outcome. Explicit new-problem controls retain their existing behavior.
+- Rationale: preserve first-valid-submit, recent16/review12/scratch6000 and six durable investigation IDs without timing-dependent debounce or new retention.
+- Affected: dist/src/study-ui.js, test/study-ui.test.js, test/edge-cases.test.js, tools/edge-browser.mjs, docs/edge-cases-20261013.md and verification.
+- Follow-up: actual browser failure/pass plus retained Node DOM double; all seeds/devices and OS IME untested. Pure calculations, storage boundary and architecture unchanged.
+
 ## D10 — 해석 과제와 답별 복습 / 2026-10-13
 
 - Context: 자동 구현 승인에 따라 기초에서 상위 추론으로 이어지는 설명과 유용한 오답 복습을 보강합니다. 기존 24유형 채점·계산에서 새로 입증된 결함은 발견하지 않았습니다.
