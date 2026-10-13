@@ -1,5 +1,17 @@
 # Verification
 
+## 2026-10-13 자동 구현 — 통합 인계
+
+- SOURCE VERIFIED: architecture.md, README.md, docs/decisions.md, 제공된 AGENTS, .gitattributes/package.json, curriculum/problem-bank/study-ui/기존 exercises와 관련 테스트·정적 검사·serve를 전체 확인했습니다. api-spec.md/requirements.md/저장소 AGENTS.md는 없습니다. 저장소 전체는 PARTIAL: 파일 목록 이후 학습/문제/완료 경로를 선택했고 모든 보조 실험 UI/추가 문서·workflow를 이번에 전체 재검토하지 않았습니다. 기존 전체 통계/저장 회귀 검사는 실행했습니다.
+- FINDING: 기존 24유형의 계산/정답에 새로 입증된 오류는 발견하지 않았습니다. 제출 결과가 색상과 계산 해설에 치우쳐 답별 내 입력/기준값 비교가 없었고 최근 풀이에서 입력을 다시 볼 수 없었습니다. 이를 학습 개선으로 보강했으며 정답 버그로 주장하지 않습니다.
+- CONTENT/UI: 9개 단원의 작은 해석 과제·접이식 해설, 두 답 각각의 정오/내 입력/기준값, 다음 문제 이후에도 남는 최근 12개 풀이 비교. 기존 첫 유효 제출/6완료/영구 저장/24유형 생성은 유지합니다. UI change: YES. 출처는 learning-provenance.md.
+- LOCAL: npm test **43/43 PASS**, 실패/skip/todo 0. npm run check PASS(16 public / 29 UTF8-noBOM-CRLF 검사 파일). 기존 24유형×64 seeds 및 모든 두 답, 독립 확률/적률/구간·Rao–Blackwell·부트스트랩·저장 경계 검사 유지. `output/playwright/qa-20261013/domain.mjs`는 9과제를 유한 자료/확률, Beta·Uniform 수치 적분, 두 점 오차의 위험, 부트스트랩 전수 표집으로 검산해 PASS했습니다. 정적 문구를 그대로 재제출하는 새 테스트는 추가하지 않았습니다.
+- ACTUAL BROWSER: 별도 QA 세션, http://127.0.0.1:52047/data-mirage/. 9개 과제·해설을 실제 열었고 기초 집단 합치기의 표시된 수치에서 평균을 계산해 제출했습니다. 1/0 입력은 시도를 열어두며 첫 답 정답/둘째 999 오답을 텍스트로 구분했습니다. 유효 답 뒤 입력 닫힘, 중복 점수 없음, 새 문제 후 기존 내 답 999가 복습에 남음, 자체/공유 저장 문자열 동일 PASS. 1440×1000 / 390×844 / 320×780에서 해석 패널과 최근 풀이의 페이지 가로 넘침 0, 관측한 page errors/console errors 0. 캡처 육안 확인.
+- CAPTURE/SELECTORS: ignored `output/playwright/qa-20261013/reasoning-1440.png`, `reasoning-390.png`, `reasoning-320.png`, `answer-comparison-desktop.png`, `answer-review-390.png`, `answer-review-320.png`. 설명 캡처는 16번 위험 단원의 `.reasoning-case`와 안쪽 해설이 열린 상태, 답 비교는 `.problem-result .answer-comparison`, 복습은 `.problem-review details`와 `.answer-comparison`입니다. QA 스크립트는 같은 폴더.
+- CHANGED FILES: README.md, dist/src/curriculum.js, dist/src/study-ui.js, docs/decisions.md, docs/learning-provenance.md(new), docs/verification.md. 기존 계산/채점/진행 모듈·스키마·CSS·문제은행은 변경하지 않았습니다.
+- FINAL FILE CHECK: 변경 텍스트6개 UTF-8 no BOM/CRLF, git diff --check PASS. Node v22.23.2. 자체 QA 브라우저만 종료했으며 메인 통합 서버는 유지했습니다.
+- LIMITS: Chromium의 위 경로만 확인했습니다. 모든 24유형의 실제 브라우저 재풀이·보조 실험 전체 E2E·WebMCP·다른 브라우저/실제 하드웨어·전문가 난이도 검토는 이번에 NOT_RUN. 정확식/근사/참값 평가 조건은 유지합니다. 메인이 갤러리/미리보기/REMOTE_CI/LIVE를 통합 확인하며 이 세션은 커밋·푸시·배포·갤러리 편집·에이전트 생성을 하지 않았습니다.
+
 ## 2026-10-10 개념·문제 중심 통계 학습 — LOCAL
 
 - SOURCE VERIFIED: architecture/README/decisions, 기존 여섯 실험·풀이·두 키 progress 경계, 새 curriculum/problem-bank/study-ui와 테스트·정적 검사를 검토했습니다. MIT OCW 18.05/18.443/18.655 읽기/강의 자료를 연결하고 한국어 규칙·예제·문제를 자체 작성했습니다. 시험 원문을 복사하거나 수능 난이도 검증을 받았다고 주장하지 않습니다.
